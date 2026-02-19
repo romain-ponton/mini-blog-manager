@@ -4,43 +4,53 @@ const AuthContext = createContext(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used inside AuthProvider");
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
   return context;
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Hydratation au refresh
+   */
   useEffect(() => {
-    const savedToken = localStorage.getItem("authToken");
     const savedUser = localStorage.getItem("authUser");
+    const savedToken = localStorage.getItem("authToken");
 
-    if (savedToken && savedUser) {
-      setToken(savedToken);
+    if (savedUser && savedToken) {
       setUser(JSON.parse(savedUser));
     }
 
     setLoading(false);
   }, []);
 
-  const login = (userData, authToken) => {
-    setUser(userData);
-    setToken(authToken);
-    localStorage.setItem("authToken", authToken);
+  const login = (userData, token) => {
+    localStorage.setItem("authToken", token);
     localStorage.setItem("authUser", JSON.stringify(userData));
+    setUser(userData);
   };
 
   const logout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
     setUser(null);
-    setToken(null);
-    localStorage.clear();
   };
+
+  const isAuthenticated = !!localStorage.getItem("authToken");
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, login, logout, isAuthenticated: !!user }}
+      value={{
+        user,
+        login,
+        logout,
+        loading,
+        isAuthenticated,
+      }}
     >
       {!loading && children}
     </AuthContext.Provider>

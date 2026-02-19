@@ -7,7 +7,7 @@ import {
   Box,
   Card,
   CardContent,
-  Typography
+  Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
@@ -22,32 +22,42 @@ export default function LoginPage() {
   const [username, setUsername] = useState("emilys");
   const [password, setPassword] = useState("emilyspass");
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = async () => {
-    try {
-      const res = await api.post("/auth/login", {
-        username,
-        password,
-        expiresInMins: 60,
-      });
+ const handleLogin = async () => {
+  try {
+    const res = await api.post("/auth/login", {
+      username,
+      password,
+      expiresInMins: 60,
+    });
 
-      login(
-        {
-          id: res.data.id,
-          name: `${res.data.firstName} ${res.data.lastName}`,
-          email: res.data.email,
-          role: "user",
-        },
-        res.data.token
-      );
+    console.log("LOGIN RESPONSE:", res.data);
 
-      navigate("/blog");
-    } catch {
-      setError("Identifiants incorrects");
+    const token = res.data.accessToken; // ✅ IMPORTANT
+
+    if (!token) {
+      throw new Error("Token manquant");
     }
-  };
 
-  return (
+    login(
+      {
+        id: res.data.id,
+        name: `${res.data.firstName} ${res.data.lastName}`,
+        email: res.data.email,
+        role: "user",
+      },
+      token 
+    );
+
+    navigate("/blog");
+  } catch (err) {
+    console.error(err);
+    setError("Identifiants incorrects");
+  }
+};
+
+return (
     <Box
       sx={{
         minHeight: "100vh",
@@ -55,7 +65,6 @@ export default function LoginPage() {
         alignItems: "center",
         justifyContent: "center",
         px: 2,
-        backgroundColor: theme.palette.background.default,
       }}
     >
       <Card
@@ -64,27 +73,11 @@ export default function LoginPage() {
           maxWidth: 520,
           borderRadius: 4,
           p: 1,
-
           backgroundColor: isDark ? "#111111" : "#ffffff",
-          border: isDark ? "1px solid #8b0000" : "none",
-
-          boxShadow: isDark
-            ? "0 10px 40px rgba(139,0,0,0.4)"
-            : "0 8px 25px rgba(0,0,0,0.08)",
-
-          transition: "0.3s",
         }}
       >
         <CardContent sx={{ p: 5 }}>
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            textAlign="center"
-            mb={3}
-            sx={{
-              color: isDark ? "#ffffff" : "text.primary",
-            }}
-          >
+          <Typography variant="h5" fontWeight="bold" textAlign="center" mb={3}>
             Connexion
           </Typography>
 
@@ -114,17 +107,11 @@ export default function LoginPage() {
           <Button
             fullWidth
             variant="contained"
-            sx={{
-              mt: 3,
-              height: 48,
-              fontWeight: "bold",
-              boxShadow: isDark
-                ? "0 6px 20px rgba(139,0,0,0.5)"
-                : undefined,
-            }}
+            sx={{ mt: 3, height: 48 }}
             onClick={handleLogin}
+            disabled={submitting}
           >
-            Se connecter
+            {submitting ? "Connexion..." : "Se connecter"}
           </Button>
         </CardContent>
       </Card>
