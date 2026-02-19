@@ -1,0 +1,35 @@
+        .hero-swiper {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.hero-slide {
+  border-radius: 30px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  transition: all 0.5s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.8),
+    rgba(0,0,0,0.2)
+  );
+}
+
+
+.swiper-slide {
+  transform: scale(0.85);
+  opacity: 0.6;
+  transition: all 0.5s ease;
+}
+
+.swiper-slide-active {
+  transform: scale(1);
+  opacity: 1;
+}
